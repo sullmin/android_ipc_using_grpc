@@ -2,6 +2,8 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.protobuf")
+    id("androidx.room")
+    id("kotlin-kapt")
 }
 
 android {
@@ -18,6 +20,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "option_name" to "option_value",
+                )
+            }
         }
     }
 
@@ -44,6 +53,9 @@ android {
         resources {
             excludes += "/META-INF/*"
         }
+    }
+    room {
+        schemaDirectory("$projectDir/db/schemas")
     }
 
     flavorDimensions += "version"
@@ -83,6 +95,7 @@ protobuf {
 }
 
 dependencies {
+    // GRPC - PROTOBUF
     implementation("io.grpc:grpc-okhttp:1.47.0")
     implementation("io.grpc:grpc-netty:1.47.0")
     implementation("io.grpc:grpc-protobuf:1.47.0")
@@ -91,6 +104,15 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api:1.3.2")
     implementation("io.grpc:grpc-netty:1.47.0")
 
+    // ROOM
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // ANDROID
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")
@@ -100,6 +122,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
+    // TEST
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

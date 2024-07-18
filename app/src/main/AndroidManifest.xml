@@ -8,6 +8,7 @@
     <uses-permission android:name="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION"/>
 
     <application
+        android:name=".IpcApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
+import com.example.android_ipc_grpc.IpcApplication
+import com.example.android_ipc_grpc.db.AppDatabase
 import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 
