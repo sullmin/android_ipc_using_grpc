@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+service IpcCore {
+  rpc sendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+  rpc subscribe (SubscribeRequest) returns (stream SubscribeResponse) {}
+}
+
+message SendMessageRequest {
+  string message = 1;
+}
+
+message SendMessageResponse {}
+
+message SubscribeRequest {}
+
+message SubscribeResponse {
+  string source = 1;
+  string message = 2;
+}
