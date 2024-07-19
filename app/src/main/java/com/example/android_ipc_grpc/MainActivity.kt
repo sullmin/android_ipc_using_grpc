@@ -1,6 +1,7 @@
 package com.example.android_ipc_grpc
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
@@ -17,7 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.example.android_ipc_grpc.ui.theme.Android_ipc_grpcTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : AbstractServiceActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
@@ -30,21 +33,21 @@ class MainActivity : AbstractServiceActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val messages by viewModel.messageQueue.collectAsState(initial = listOf())
-
                     Column {
                         PackageWidget(
                             pkg = application.packageName
                         )
                         Row {
                             SendMessageWidget {
-                                viewModel.sendMessage()
+                                lifecycleScope.launch {
+                                    viewModel.sendMessage()
+                                }
                             }
                             SubscribeWidget {
                                 viewModel.subscribe()
                             }
                         }
-                        MessagesWidget(messages)
+                        MessagesWidget()
                     }
                 }
             }
@@ -52,7 +55,10 @@ class MainActivity : AbstractServiceActivity() {
     }
 
     @Composable
-    private fun MessagesWidget(messages: List<String>) {
+    private fun MessagesWidget() {
+        val messages by viewModel.messageQueue.collectAsState(initial = listOf())
+
+        Log.e("debug", "in build code ${messages.size}")
         Text(text = "messages - ${messages.size}")
         LazyColumn {
             items(messages) { message ->
