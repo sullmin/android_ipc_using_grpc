@@ -4,6 +4,7 @@ import IpcCoreGrpcKt
 import IpcCoreOuterClass
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_ipc_grpc.utils.toByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,17 +20,28 @@ class MainActivityViewModel : ViewModel() {
     }
     val messageQueue: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
 
-    suspend fun sendMessage() {
+    private fun getTemporaryIdentifier(pkg: String): UUID = when {
+        pkg.endsWith("1") -> UUID.fromString("6919b702-9cec-445f-8678-eea4e2da912f")
+        else -> UUID.fromString("50f15c64-49ed-4f66-b456-a81c4ffa926c")
+    }
+
+    suspend fun sendMessage(pkg: String) {
         val request = IpcCoreOuterClass.SendMessageRequest.newBuilder()
-            .setMessage(UUID.randomUUID().toString()).build()
+            .setMessage(
+                UUID.randomUUID().toString()
+            )
+            .setTemporaryIdentifier(
+                getTemporaryIdentifier(pkg).toByteString()
+            )
+            .build()
         stub.sendMessage(request)
     }
 
     fun subscribe() {
         viewModelScope.launch {
             val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
-             stub.subscribe(request).collect {
-                 messageQueue.value = it.messagesList.map { messageIt ->
+            stub.subscribe(request).collect {
+                messageQueue.value = it.messagesList.map { messageIt ->
                     messageIt.message
                 }
             }

@@ -1,4 +1,4 @@
-package com.example.android_ipc_grpc
+package com.example.android_ipc_grpc.ipc
 
 import android.content.ComponentName
 import android.content.Context

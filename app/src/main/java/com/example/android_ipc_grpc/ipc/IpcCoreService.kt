@@ -4,8 +4,12 @@ import IpcCoreGrpcKt
 import IpcCoreOuterClass
 import com.example.android_ipc_grpc.IpcApplication
 import com.example.android_ipc_grpc.db.schemas.Message
+import com.example.android_ipc_grpc.utils.toByteString
+import com.example.android_ipc_grpc.utils.toTimestamp
+import com.example.android_ipc_grpc.utils.toUUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
 
 class IpcCoreService : IpcCoreGrpcKt.IpcCoreCoroutineImplBase() {
     private val messageDao = IpcApplication.database.messageDao()
@@ -13,8 +17,9 @@ class IpcCoreService : IpcCoreGrpcKt.IpcCoreCoroutineImplBase() {
     override suspend fun sendMessage(request: IpcCoreOuterClass.SendMessageRequest): IpcCoreOuterClass.SendMessageResponse {
         messageDao.insertMessage(
             Message(
-                id = 0,
-                content = request.message
+                createdBy = request.temporaryIdentifier.toUUID(),
+                content = request.message,
+                createdAt = LocalDateTime.now()
             )
         )
         return IpcCoreOuterClass.SendMessageResponse.newBuilder().build()
@@ -26,8 +31,9 @@ class IpcCoreService : IpcCoreGrpcKt.IpcCoreCoroutineImplBase() {
                 .addAllMessages(
                     messages.map {
                         IpcCoreOuterClass.Message.newBuilder()
-                            .setSource("")
+                            .setSource(it.createdBy.toByteString())
                             .setMessage(it.content)
+                            .setCreatedAt(it.createdAt.toTimestamp())
                             .build()
                     }
                 )

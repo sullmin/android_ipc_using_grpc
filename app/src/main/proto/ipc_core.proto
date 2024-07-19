@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+import "google/protobuf/timestamp.proto";
+
 service IpcCore {
   rpc sendMessage (SendMessageRequest) returns (SendMessageResponse) {}
   rpc subscribe (SubscribeRequest) returns (stream SubscribeResponse) {}
@@ -7,6 +9,8 @@ service IpcCore {
 
 message SendMessageRequest {
   string message = 1;
+  // TODO(1) replace by interceptor
+  bytes temporaryIdentifier = 2;
 }
 
 message SendMessageResponse {}
@@ -18,6 +22,7 @@ message SubscribeResponse {
 }
 
 message Message {
-  string source = 1;
+  bytes source = 1;
   string message = 2;
+  google.protobuf.Timestamp created_at = 3;
 }

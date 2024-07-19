@@ -3,6 +3,7 @@ package com.example.android_ipc_grpc
 import android.app.Application
 import androidx.room.Room
 import com.example.android_ipc_grpc.db.AppDatabase
+import com.example.android_ipc_grpc.db.converter.LocalDateTimeConverter
 
 class IpcApplication : Application() {
 
@@ -16,6 +17,10 @@ class IpcApplication : Application() {
             applicationContext,
             AppDatabase::class.java,
             "android_ipc_grpc"
-        ).build()
+        )
+            .addTypeConverter(
+                LocalDateTimeConverter()
+            )
+            .build()
     }
 }

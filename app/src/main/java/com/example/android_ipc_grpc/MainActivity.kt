@@ -18,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
+import com.example.android_ipc_grpc.ipc.AbstractServiceActivity
 import com.example.android_ipc_grpc.ui.theme.Android_ipc_grpcTheme
 import kotlinx.coroutines.launch
 
@@ -43,7 +44,7 @@ class MainActivity : AbstractServiceActivity() {
                         Row {
                             SendMessageWidget {
                                 lifecycleScope.launch {
-                                    viewModel.sendMessage()
+                                    viewModel.sendMessage(application.packageName)
                                 }
                             }
                         }
