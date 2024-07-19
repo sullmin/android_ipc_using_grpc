@@ -1,3 +1,5 @@
+import com.google.protobuf.gradle.id
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -73,22 +75,29 @@ android {
     }
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.19.2"
     }
     plugins {
-        create("grpc") {
+        id("grpc") {
             artifact = "io.grpc:protoc-gen-grpc-java:1.47.0"
+        }
+        id("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.2.1:jdk7@jar"
         }
     }
     generateProtoTasks {
         all().forEach {
             it.plugins {
-                create("grpc") { options += "lite" }
-            }
-            it.builtins {
-                create("java") { options += "lite" }
+                id("java")
+                id("grpc")
+                id("grpckt")
             }
         }
     }
@@ -96,13 +105,16 @@ protobuf {
 
 dependencies {
     // GRPC - PROTOBUF
-    implementation("io.grpc:grpc-okhttp:1.47.0")
-    implementation("io.grpc:grpc-netty:1.47.0")
-    implementation("io.grpc:grpc-protobuf:1.47.0")
-    implementation("io.grpc:grpc-stub:1.47.0")
-    implementation("com.google.protobuf:protobuf-java:3.21.1")
+    val grpc_version = "1.47.0"
+
+    implementation("io.grpc:grpc-stub:$grpc_version")
+    implementation("io.grpc:grpc-netty:$grpc_version")
+    implementation("io.grpc:grpc-okhttp:$grpc_version")
+    implementation("io.grpc:grpc-protobuf:$grpc_version")
+    implementation("io.grpc:grpc-kotlin-stub:1.2.1")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
-    implementation("io.grpc:grpc-netty:1.47.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     // ROOM
     val room_version = "2.6.1"

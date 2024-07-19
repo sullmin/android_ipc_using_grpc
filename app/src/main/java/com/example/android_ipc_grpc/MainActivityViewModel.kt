@@ -5,6 +5,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import java.util.UUID
 
 class MainActivityViewModel : ViewModel() {
@@ -14,7 +19,7 @@ class MainActivityViewModel : ViewModel() {
     private val stub: IpcCoreGrpc.IpcCoreBlockingStub by lazy {
         IpcCoreGrpc.newBlockingStub(channel)
     }
-    val messageQueue = mutableStateListOf<String>()
+    var messageQueue: Flow<List<String>> = emptyFlow()
 
     fun sendMessage() {
         val request = IpcCoreOuterClass.SendMessageRequest.newBuilder()
@@ -23,14 +28,17 @@ class MainActivityViewModel : ViewModel() {
     }
 
     fun subscribe() {
+        Log.e("DEBUG", "here start")
         val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
-        val response = stub.subscribe(request)
 
-        messageQueue.clear()
-        response.forEachRemaining {
-            Log.e("DEBUG", "here ${it.source} ${it.message}")
-            messageQueue.add("${it.source} ${it.message}")
+        messageQueue = stub.subscribe(request).asFlow().map {
+            Log.e("DEBUG", "here ${it.messagesList.size}")
+            it.messagesList.map { messageIt ->
+                Log.e("DEBUG", "here ${messageIt.source} ${messageIt.message}")
+                messageIt.message
+            }
         }
+        Log.e("DEBUG", "here END")
     }
 
     override fun onCleared() {

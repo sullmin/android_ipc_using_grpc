@@ -14,6 +14,10 @@ message SendMessageResponse {}
 message SubscribeRequest {}
 
 message SubscribeResponse {
+  repeated Message messages = 1;
+}
+
+message Message {
   string source = 1;
   string message = 2;
 }

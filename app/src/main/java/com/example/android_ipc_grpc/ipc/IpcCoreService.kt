@@ -1,5 +1,6 @@
 package com.example.android_ipc_grpc.ipc
 
+import IpcCoreGrpcKt
 import android.util.Log
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.mutableStateOf
@@ -25,47 +26,33 @@ import java.util.LinkedList
 import java.util.Queue
 import java.util.stream.Stream
 
-class IpcCoreService : IpcCoreGrpc.IpcCoreImplBase() {
+class IpcCoreService : IpcCoreGrpcKt.IpcCoreCoroutineImplBase() {
     private val messageDao = IpcApplication.database.messageDao()
 
-    override fun sendMessage(
-        request: IpcCoreOuterClass.SendMessageRequest?,
-        responseObserver: StreamObserver<IpcCoreOuterClass.SendMessageResponse>?
-    ) {
-        Log.e("DEBUG", "message ${request?.message}")
+    override suspend fun sendMessage(request: IpcCoreOuterClass.SendMessageRequest): IpcCoreOuterClass.SendMessageResponse {
+        Log.e("DEBUG", "message send ${request.message}")
         messageDao.insertMessage(
             Message(
                 id = 0,
-                content = request!!.message
+                content = request.message
             )
         )
-
-        val response = IpcCoreOuterClass.SendMessageResponse.newBuilder().build()
-
-        responseObserver?.onNext(response)
-        responseObserver?.onCompleted()
+        return IpcCoreOuterClass.SendMessageResponse.newBuilder().build()
     }
 
-    override fun subscribe(
-        request: IpcCoreOuterClass.SubscribeRequest?,
-        responseObserver: StreamObserver<IpcCoreOuterClass.SubscribeResponse>?
-    ) {
-        Log.e("DEBUG", "subscribe START")
-
-
-
-        CoroutineScope(git add).launch {
-            messageDao.listMessages().collect { messages ->
-                messages.forEach {
-                    val response = IpcCoreOuterClass.SubscribeResponse.newBuilder()
-                        .setMessage(it.content)
-                        .build()
-                    Log.e("DEBUG", "FLOW $it")
-                    responseObserver?.onNext(response)
-                }
-            }
-            Log.e("DEBUG", "subscribe END")
-            responseObserver?.onCompleted()
+    override fun subscribe(request: IpcCoreOuterClass.SubscribeRequest): Flow<IpcCoreOuterClass.SubscribeResponse> {
+        return messageDao.listMessages().map { messages ->
+            IpcCoreOuterClass.SubscribeResponse.newBuilder()
+                .addAllMessages(
+                    messages.map {
+                        Log.e("DEBUG", "subscribe message ${it.content}")
+                        IpcCoreOuterClass.Message.newBuilder()
+                            .setSource("")
+                            .setMessage(it.content)
+                            .build()
+                    }
+                )
+                .build()
         }
     }
 }
