@@ -1,6 +1,7 @@
 package com.example.android_ipc_grpc
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
@@ -32,8 +33,6 @@ class MainActivity : AbstractServiceActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val messages by viewModel.messageQueue.collect()
-
                     Column {
                         PackageWidget(
                             pkg = application.packageName
@@ -48,7 +47,7 @@ class MainActivity : AbstractServiceActivity() {
                                 viewModel.subscribe()
                             }
                         }
-                        MessagesWidget(messages)
+                        MessagesWidget()
                     }
                 }
             }
@@ -56,7 +55,10 @@ class MainActivity : AbstractServiceActivity() {
     }
 
     @Composable
-    private fun MessagesWidget(messages: List<String>) {
+    private fun MessagesWidget() {
+        val messages by viewModel.messageQueue.collectAsState(initial = listOf())
+
+        Log.e("debug", "in build code ${messages.size}")
         Text(text = "messages - ${messages.size}")
         LazyColumn {
             items(messages) { message ->
