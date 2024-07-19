@@ -17,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import com.example.android_ipc_grpc.ui.theme.Android_ipc_grpcTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : AbstractServiceActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
@@ -30,7 +32,7 @@ class MainActivity : AbstractServiceActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val messages by viewModel.messageQueue.collectAsState(initial = listOf())
+                    val messages by viewModel.messageQueue.collect()
 
                     Column {
                         PackageWidget(
@@ -38,7 +40,9 @@ class MainActivity : AbstractServiceActivity() {
                         )
                         Row {
                             SendMessageWidget {
-                                viewModel.sendMessage()
+                                lifecycleScope.launch {
+                                    viewModel.sendMessage()
+                                }
                             }
                             SubscribeWidget {
                                 viewModel.subscribe()
