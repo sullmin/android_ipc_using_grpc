@@ -30,7 +30,6 @@ class IpcCoreService : IpcCoreGrpcKt.IpcCoreCoroutineImplBase() {
     private val messageDao = IpcApplication.database.messageDao()
 
     override suspend fun sendMessage(request: IpcCoreOuterClass.SendMessageRequest): IpcCoreOuterClass.SendMessageResponse {
-        Log.e("DEBUG", "message send ${request.message}")
         messageDao.insertMessage(
             Message(
                 id = 0,

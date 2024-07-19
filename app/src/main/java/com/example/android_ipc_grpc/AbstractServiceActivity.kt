@@ -5,25 +5,29 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
-import android.util.Log
 import androidx.activity.ComponentActivity
-import com.example.android_ipc_grpc.ipc.IpcService
 
 
 abstract class AbstractServiceActivity : ComponentActivity() {
-    private lateinit var mService: IBinder
     private var mBound: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            mService = service
             mBound = true
+            onServiceBound()
+        }
+
+        override fun onNullBinding(name: ComponentName?) {
+            mBound = true
+            onServiceBound()
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
             mBound = false
         }
     }
+
+    abstract fun onServiceBound()
 
     override fun onStart() {
         super.onStart()

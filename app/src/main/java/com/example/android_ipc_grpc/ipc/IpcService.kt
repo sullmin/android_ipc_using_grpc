@@ -2,11 +2,8 @@ package com.example.android_ipc_grpc.ipc
 
 import android.app.Service
 import android.content.Intent
-import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import com.example.android_ipc_grpc.IpcApplication
-import com.example.android_ipc_grpc.db.AppDatabase
 import io.grpc.Server
 import io.grpc.netty.NettyServerBuilder
 
@@ -15,7 +12,6 @@ class IpcService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.e("DEBUG", "SERVICE START")
         ipcServer = try {
             NettyServerBuilder.forPort(8080)
                 .addService(
@@ -30,7 +26,6 @@ class IpcService : Service() {
     }
 
     override fun onDestroy() {
-        Log.e("DEBUG", "SERVICE STOP")
         super.onDestroy()
         ipcServer?.shutdownNow()
         ipcServer = null
