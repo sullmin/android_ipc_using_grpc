@@ -8,7 +8,7 @@ The communication is structured by ***Protobuf*** and integrate using ***gRPC***
 Clone this repository and import into **Android Studio**
 
 ```bash
-git clone git@github.com:sullmin/android_ipc_grpc.git
+git clone git@github.com:sullmin/android_ipc_using_grpc.git
 ```
 
 ## Build variants
