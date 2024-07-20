@@ -12,6 +12,8 @@ import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.UUID
 
 class MainActivityViewModel : ViewModel() {
@@ -45,18 +47,34 @@ class MainActivityViewModel : ViewModel() {
         viewModelScope.launch {
             val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
             stub.subscribe(request).collect {
+                var previousCreatedAt: LocalDateTime? = null
                 messageQueue.value = it.messagesList.map { messageIt ->
-                    UiMessage(
+                    val currentLocalDateTime = messageIt.createdAt.toLocalDateTime()
+                    val uiMessage = UiMessage(
                         message = messageIt.message,
-                        sendAt = messageIt.createdAt.toLocalDateTime(),
+                        sendAt = currentLocalDateTime,
                         isOwner = when (messageIt.source.toUUID()) {
                             getTemporaryIdentifier(pkg) -> UiMessage.OwnerType.ME
                             else -> UiMessage.OwnerType.OTHER
-                        }
+                        },
+                        isMessageGroup = computeGroupMassage(
+                            previousCreatedAt,
+                            currentLocalDateTime
+                        )
                     )
+                    previousCreatedAt = currentLocalDateTime
+                    uiMessage
                 }
             }
         }
+    }
+
+    private fun computeGroupMassage(prev: LocalDateTime?, current: LocalDateTime): Boolean {
+        val minutes = prev?.let {
+            Duration.between(it, current)
+        }?.toMinutes() ?: Long.MAX_VALUE
+
+        return minutes <= 10
     }
 
     override fun onCleared() {

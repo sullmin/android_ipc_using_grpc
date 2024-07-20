@@ -169,7 +169,8 @@ class MainActivity : AbstractServiceActivity() {
                 MessageBox(
                     message = uiMessage.message,
                     date = uiMessage.sendAt,
-                    isLeft = uiMessage.isOwner == UiMessage.OwnerType.ME
+                    isLeft = uiMessage.isOwner == UiMessage.OwnerType.ME,
+                    isMessageGroup = uiMessage.isMessageGroup
                 )
             }
         }
