@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.activity.ComponentActivity
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -31,7 +30,7 @@ abstract class AbstractServiceActivity : ComponentActivity() {
 
     abstract fun onServiceBound()
 
-    fun serviceBound(): Flow<Boolean> = mBound
+    fun serviceBound(): MutableStateFlow<Boolean> = mBound
 
     override fun onStart() {
         super.onStart()

@@ -1,6 +1,7 @@
 package com.example.android_ipc_grpc
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
@@ -74,8 +75,13 @@ class MainActivity : AbstractServiceActivity() {
             currentInputMessage = currentInputMessage,
             onValueChangeListener = { viewModel.message.value = it },
             onSendMessageListener = {
-                lifecycleScope.launch {
-                    viewModel.sendMessage(application.packageName)
+                if (serviceBound().value) {
+                    lifecycleScope.launch {
+                        viewModel.sendMessage(application.packageName)
+                    }
+                } else {
+                    Toast.makeText(applicationContext, "Service not bound", Toast.LENGTH_LONG)
+                        .show()
                 }
             }
         )
