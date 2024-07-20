@@ -19,6 +19,7 @@ class MainActivityViewModel : ViewModel() {
         IpcCoreGrpcKt.IpcCoreCoroutineStub(channel)
     }
     val messageQueue: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
+    val message: MutableStateFlow<String> = MutableStateFlow("")
 
     private fun getTemporaryIdentifier(pkg: String): UUID = when {
         pkg.endsWith("1") -> UUID.fromString("6919b702-9cec-445f-8678-eea4e2da912f")
@@ -26,14 +27,14 @@ class MainActivityViewModel : ViewModel() {
     }
 
     suspend fun sendMessage(pkg: String) {
+        val msg = message.value.ifBlank { null } ?: return
         val request = IpcCoreOuterClass.SendMessageRequest.newBuilder()
-            .setMessage(
-                UUID.randomUUID().toString()
-            )
+            .setMessage(msg)
             .setTemporaryIdentifier(
                 getTemporaryIdentifier(pkg).toByteString()
             )
             .build()
+        message.value = ""
         stub.sendMessage(request)
     }
 

@@ -6,28 +6,32 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.activity.ComponentActivity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 
 
 abstract class AbstractServiceActivity : ComponentActivity() {
-    private var mBound: Boolean = false
+    private val mBound: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
-            mBound = true
+            mBound.value = true
             onServiceBound()
         }
 
         override fun onNullBinding(name: ComponentName?) {
-            mBound = true
+            mBound.value = true
             onServiceBound()
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
-            mBound = false
+            mBound.value = false
         }
     }
 
     abstract fun onServiceBound()
+
+    fun serviceBound(): Flow<Boolean> = mBound
 
     override fun onStart() {
         super.onStart()
@@ -45,6 +49,6 @@ abstract class AbstractServiceActivity : ComponentActivity() {
     override fun onStop() {
         super.onStop()
         unbindService(connection)
-        mBound = false
+        mBound.value = false
     }
 }
