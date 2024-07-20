@@ -15,18 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
-import androidx.compose.material.icons.rounded.Send
 import androidx.compose.material3.AlertDialogDefaults.shape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +36,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.android_ipc_grpc.ipc.AbstractServiceActivity
 import com.example.android_ipc_grpc.ui.components.IconBlinker
 import com.example.android_ipc_grpc.ui.components.MessageBox
+import com.example.android_ipc_grpc.ui.components.MessageTextField
 import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.ui.theme.Android_ipc_grpcTheme
 import kotlinx.coroutines.launch
@@ -74,35 +70,15 @@ class MainActivity : AbstractServiceActivity() {
     @Composable
     private fun BottomBarWidget() {
         val currentInputMessage by viewModel.message.collectAsState(initial = "")
-        Row(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                shape = RoundedCornerShape(26.dp),
-                value = currentInputMessage,
-                onValueChange = { viewModel.message.value = it },
-                trailingIcon = {
-                    OutlinedButton(
-                        modifier = Modifier.padding(18.dp),
-                        shape = CircleShape,
-                        onClick = {
-                            lifecycleScope.launch {
-                                viewModel.sendMessage(application.packageName)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(10.dp),
-                            imageVector = Icons.Rounded.Send,
-                            contentDescription = "Button send"
-                        )
-                    }
+        MessageTextField(
+            currentInputMessage = currentInputMessage,
+            onValueChangeListener = { viewModel.message.value = it },
+            onSendMessageListener = {
+                lifecycleScope.launch {
+                    viewModel.sendMessage(application.packageName)
                 }
-            )
-        }
+            }
+        )
     }
 
     @Composable
