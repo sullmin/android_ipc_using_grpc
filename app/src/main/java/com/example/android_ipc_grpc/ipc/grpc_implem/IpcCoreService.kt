@@ -1,4 +1,4 @@
-package com.example.android_ipc_grpc.ipc
+package com.example.android_ipc_grpc.ipc.grpc_implem
 
 import IpcCoreGrpcKt
 import IpcCoreOuterClass
