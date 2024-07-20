@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -53,15 +54,19 @@ fun MessageBox(
                 modifier = Modifier
                     .background(
                         color = if (isLeft) {
-                            Color.Gray
+                            MaterialTheme.colorScheme.tertiary
                         } else {
-                            Color.Blue
+                            MaterialTheme.colorScheme.primary
                         },
                         shape = RoundedCornerShape(20.dp)
                     )
                     .padding(8.dp)
             ) {
-                Text(text = message)
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
             }
         }
     }

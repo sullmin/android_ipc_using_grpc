@@ -40,6 +40,7 @@ import com.example.android_ipc_grpc.ui.components.MessageBox
 import com.example.android_ipc_grpc.ui.components.MessageTextField
 import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.ui.theme.Android_ipc_grpcTheme
+import com.example.android_ipc_grpc.ui.theme.systemGrey
 import kotlinx.coroutines.launch
 
 class MainActivity : AbstractServiceActivity() {
@@ -52,7 +53,10 @@ class MainActivity : AbstractServiceActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Android_ipc_grpcTheme {
+            Android_ipc_grpcTheme(
+                dynamicColor = false,
+                darkTheme = true
+            ) {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = { TopBarWidget() },
@@ -101,6 +105,7 @@ class MainActivity : AbstractServiceActivity() {
             Icon(
                 modifier = Modifier.size(30.dp),
                 imageVector = Icons.Rounded.KeyboardArrowLeft,
+                tint = MaterialTheme.colorScheme.primary,
                 contentDescription = "Button back"
             )
             IdentityWidget(
@@ -109,6 +114,7 @@ class MainActivity : AbstractServiceActivity() {
             IconBlinker(
                 label = "ServiceStatus",
                 iconVector = Icons.Outlined.Email,
+                iconTint = MaterialTheme.colorScheme.primary,
                 blink = !serviceStatus
             )
         }
@@ -124,12 +130,13 @@ class MainActivity : AbstractServiceActivity() {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(shape)
-                    .background(Color.Red)
+                    .background(systemGrey)
                     .padding(4.dp)
             ) {
                 Icon(
                     modifier = Modifier.fillMaxSize(),
                     imageVector = Icons.Outlined.Person,
+                    tint = Color.White,
                     contentDescription = "Icon eMail"
                 )
             }

@@ -6,26 +6,27 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.android_ipc_grpc.ui.theme.systemSuccess
 
 @Composable
 fun IconBlinker(
     label: String,
     iconVector: ImageVector,
+    iconTint: Color,
     blink: Boolean = true
 ) {
     Box(
@@ -35,6 +36,7 @@ fun IconBlinker(
         Icon(
             modifier = Modifier.size(30.dp),
             imageVector = iconVector,
+            tint = iconTint,
             contentDescription = "Icon eMail"
         )
         AnimatedVisibility(
@@ -46,7 +48,7 @@ fun IconBlinker(
             visible = !blink
         ) {
             BoxCircle(
-                modifier = Modifier.background(Color.Green)
+                color = systemSuccess
             )
         }
     }
@@ -68,18 +70,21 @@ private fun CircleBlinker(label: String) {
     )
 
     BoxCircle(
-        modifier = Modifier.background(Color.Red.copy(alpha = scale))
+        color = MaterialTheme.colorScheme.error.copy(alpha = scale)
     )
 }
 
 @Composable
 private fun BoxCircle(
-    modifier: Modifier
+    color: Color
 ) {
-    Box(
-        modifier = modifier
-            .size(10.dp)
-            .clip(AlertDialogDefaults.shape)
+    Canvas(
+        modifier = Modifier.size(10.dp),
+        onDraw = {
+            drawCircle(
+                color = color
+            )
+        }
     )
 }
 
@@ -88,6 +93,7 @@ private fun BoxCircle(
 fun IconBlinkerPreview() {
     IconBlinker(
         label = "",
+        iconTint = Color.Black,
         iconVector = Icons.Outlined.Email,
         blink = true
     )
