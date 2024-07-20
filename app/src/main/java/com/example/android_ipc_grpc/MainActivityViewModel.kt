@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.utils.toByteString
+import com.example.android_ipc_grpc.utils.toLocalDateTime
 import com.example.android_ipc_grpc.utils.toUUID
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
@@ -47,7 +48,7 @@ class MainActivityViewModel : ViewModel() {
                 messageQueue.value = it.messagesList.map { messageIt ->
                     UiMessage(
                         message = messageIt.message,
-                        sendAt = messageIt.message,
+                        sendAt = messageIt.createdAt.toLocalDateTime(),
                         isOwner = when (messageIt.source.toUUID()) {
                             getTemporaryIdentifier(pkg) -> UiMessage.OwnerType.ME
                             else -> UiMessage.OwnerType.OTHER

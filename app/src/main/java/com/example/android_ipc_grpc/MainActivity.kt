@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.example.android_ipc_grpc.ipc.AbstractServiceActivity
 import com.example.android_ipc_grpc.ui.components.IconBlinker
+import com.example.android_ipc_grpc.ui.components.MessageBox
+import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.ui.theme.Android_ipc_grpcTheme
 import kotlinx.coroutines.launch
 
@@ -164,7 +166,11 @@ class MainActivity : AbstractServiceActivity() {
             modifier = Modifier.fillMaxSize()
         ) {
             items(messages) { uiMessage ->
-                Text(uiMessage.message)
+                MessageBox(
+                    message = uiMessage.message,
+                    date = uiMessage.sendAt,
+                    isLeft = uiMessage.isOwner == UiMessage.OwnerType.ME
+                )
             }
         }
     }
