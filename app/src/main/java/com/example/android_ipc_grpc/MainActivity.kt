@@ -8,9 +8,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -47,7 +47,7 @@ class MainActivity : AbstractServiceActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onServiceBound() {
-        viewModel.subscribe()
+        viewModel.subscribe(application.packageName)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,7 +109,7 @@ class MainActivity : AbstractServiceActivity() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.1f)
+                .height(70.dp)
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
@@ -160,12 +160,11 @@ class MainActivity : AbstractServiceActivity() {
     private fun MessagesWidget() {
         val messages by viewModel.messageQueue.collectAsState(initial = listOf())
 
-        Text(text = "messages - ${messages.size}")
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
-            items(messages) { message ->
-                Text(message)
+            items(messages) { uiMessage ->
+                Text(uiMessage.message)
             }
         }
     }

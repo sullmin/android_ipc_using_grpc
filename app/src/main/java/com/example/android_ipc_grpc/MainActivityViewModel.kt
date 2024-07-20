@@ -4,7 +4,9 @@ import IpcCoreGrpcKt
 import IpcCoreOuterClass
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.utils.toByteString
+import com.example.android_ipc_grpc.utils.toUUID
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +20,7 @@ class MainActivityViewModel : ViewModel() {
     private val stub: IpcCoreGrpcKt.IpcCoreCoroutineStub by lazy {
         IpcCoreGrpcKt.IpcCoreCoroutineStub(channel)
     }
-    val messageQueue: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
+    val messageQueue: MutableStateFlow<List<UiMessage>> = MutableStateFlow(listOf())
     val message: MutableStateFlow<String> = MutableStateFlow("")
 
     private fun getTemporaryIdentifier(pkg: String): UUID = when {
@@ -38,12 +40,19 @@ class MainActivityViewModel : ViewModel() {
         stub.sendMessage(request)
     }
 
-    fun subscribe() {
+    fun subscribe(pkg: String) {
         viewModelScope.launch {
             val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
             stub.subscribe(request).collect {
                 messageQueue.value = it.messagesList.map { messageIt ->
-                    messageIt.message
+                    UiMessage(
+                        message = messageIt.message,
+                        sendAt = messageIt.message,
+                        isOwner = when (messageIt.source.toUUID()) {
+                            getTemporaryIdentifier(pkg) -> UiMessage.OwnerType.ME
+                            else -> UiMessage.OwnerType.OTHER
+                        }
+                    )
                 }
             }
         }

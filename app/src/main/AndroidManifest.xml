@@ -4,8 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <permission android:name="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION"/>
-    <uses-permission android:name="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION"/>
+    <permission android:name="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION" />
+    <uses-permission android:name="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION" />
 
     <application
         android:name=".IpcApplication"
@@ -22,7 +22,8 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Android_ipc_grpc">
+            android:theme="@style/Theme.Android_ipc_grpc"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -31,8 +32,8 @@
 
         <service
             android:name=".ipc.IpcService"
-            android:exported="true"
             android:enabled="true"
+            android:exported="true"
             android:permission="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION">
             <intent-filter>
                 <action android:name="com.example.android_ipc_grpc.START_SERVICE" />
