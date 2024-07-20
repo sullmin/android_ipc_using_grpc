@@ -15,4 +15,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "android_ipc_grpc"
 include(":app")
-include(":app:ipc_module")
