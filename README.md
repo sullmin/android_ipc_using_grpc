@@ -1,5 +1,8 @@
 # Android IPC using gRPC
 
+This application is an example of *Interprocess communication* between two *Android* application.
+The communication is structured by ***Protobuf*** and integrate using ***gRPC***.
+
 ## Installation
 
 Clone this repository and import into **Android Studio**
