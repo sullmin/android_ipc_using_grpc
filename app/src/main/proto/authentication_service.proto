@@ -22,12 +22,12 @@ message GenerateExerciseRequest {
 }
 
 message GenerateExerciseResponse {
-  bytes signed_message = 1;
+  bytes raw_message = 1;
 }
 
 message ResolveExerciseRequest {
   bytes device = 1;
-  bytes raw_message = 2;
+  bytes signed_message = 2;
 }
 
 message ResolveExerciseResponse {
