@@ -16,6 +16,6 @@ interface ExerciseDao {
     @Update
     fun update(exercise: Exercise)
 
-    @Query("SELECT * FROM exercises WHERE device_id = :devicePublicId AND answered_at IS NULL ORDER BY created_at DESC LIMIT 1")
+    @Query("SELECT * FROM exercises WHERE device_id = :devicePublicId AND (answered_at IS NULL OR revoked_at IS NULL) ORDER BY created_at DESC LIMIT 1")
     fun find(devicePublicId: UUID): Exercise?
 }

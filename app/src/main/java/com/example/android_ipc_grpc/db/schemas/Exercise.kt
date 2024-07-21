@@ -26,6 +26,8 @@ data class Exercise(
     val createdAt: LocalDateTime,
     @ColumnInfo(name = "answered_at")
     val answeredAt: LocalDateTime?,
+    @ColumnInfo(name = "revoked_at")
+    val revokedAt: LocalDateTime?,
     @ColumnInfo(name = "response_success")
     val responseSuccess: Boolean?,
     @ColumnInfo(name = "raw_message", typeAffinity = ColumnInfo.BLOB)
