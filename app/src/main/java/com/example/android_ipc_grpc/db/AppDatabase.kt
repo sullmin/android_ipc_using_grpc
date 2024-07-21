@@ -5,12 +5,16 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.android_ipc_grpc.db.converter.LocalDateTimeConverter
 import com.example.android_ipc_grpc.db.dao.MessageDao
+import com.example.android_ipc_grpc.db.schemas.Device
+import com.example.android_ipc_grpc.db.schemas.Exercise
 import com.example.android_ipc_grpc.db.schemas.Message
 
 @Database(
     version = 1,
     entities = [
-        Message::class
+        Message::class,
+        Device::class,
+        Exercise::class
     ]
 )
 @TypeConverters(
