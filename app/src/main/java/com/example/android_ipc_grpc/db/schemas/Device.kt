@@ -19,7 +19,7 @@ data class Device(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     @ColumnInfo(name = "public_id")
-    val publicId: UUID,
+    val publicId: UUID = UUID.randomUUID(),
     @ColumnInfo(name = "public_key", typeAffinity = ColumnInfo.BLOB)
     val publicKey: ByteArray,
 )

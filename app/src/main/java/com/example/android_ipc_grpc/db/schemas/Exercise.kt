@@ -25,11 +25,11 @@ data class Exercise(
     @ColumnInfo(name = "created_at")
     val createdAt: LocalDateTime,
     @ColumnInfo(name = "answered_at")
-    val answeredAt: LocalDateTime?,
+    val answeredAt: LocalDateTime? = null,
     @ColumnInfo(name = "revoked_at")
-    val revokedAt: LocalDateTime?,
+    val revokedAt: LocalDateTime? = null,
     @ColumnInfo(name = "response_success")
-    val responseSuccess: Boolean?,
+    val responseSuccess: Boolean? = null,
     @ColumnInfo(name = "raw_message", typeAffinity = ColumnInfo.BLOB)
     val rawMessage: ByteArray,
 )
