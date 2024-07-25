@@ -24,5 +24,5 @@ interface ExerciseDao {
     fun revokedForDevice(
         devicePublicId: UUID,
         revokedAt: LocalDateTime = LocalDateTime.now()
-    ): Exercise?
+    )
 }

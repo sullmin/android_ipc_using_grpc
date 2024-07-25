@@ -81,7 +81,8 @@ class MainActivity : AbstractServiceActivity() {
             onSendMessageListener = {
                 if (serviceBound().value) {
                     lifecycleScope.launch {
-                        viewModel.sendMessage(application.packageName)
+                        //viewModel.sendMessage(application.packageName)
+                        viewModel.authenticate()
                     }
                 } else {
                     Toast.makeText(applicationContext, "Service not bound", Toast.LENGTH_LONG)

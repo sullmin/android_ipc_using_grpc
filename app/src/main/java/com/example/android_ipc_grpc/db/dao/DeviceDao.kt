@@ -17,11 +17,14 @@ abstract class DeviceDao {
     abstract fun get(id: Long): Device?
 
     @Transaction
-    fun insertSafety(device: Device): Device {
-        val id = insert(device)
+    open fun upsertSafety(device: Device): Device {
+        val id = find(device.publicKey)?.id ?: insert(device)
         return get(id)!!
     }
 
     @Query("SELECT * FROM devices WHERE public_id = :publicId")
     abstract fun find(publicId: UUID): Device
+
+    @Query("SELECT * FROM devices WHERE public_key = :publicKey LIMIT 1")
+    abstract fun find(publicKey: ByteArray): Device?
 }

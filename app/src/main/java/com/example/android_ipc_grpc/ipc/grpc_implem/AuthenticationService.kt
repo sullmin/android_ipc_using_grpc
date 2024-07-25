@@ -2,9 +2,11 @@ package com.example.android_ipc_grpc.ipc.grpc_implem
 
 import AuthenticationServiceGrpcKt
 import AuthenticationServiceOuterClass
+import android.util.Log
 import com.example.android_ipc_grpc.IpcApplication
 import com.example.android_ipc_grpc.db.schemas.Device
 import com.example.android_ipc_grpc.db.schemas.Exercise
+import com.example.android_ipc_grpc.ipc.SecurityDecoder
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
@@ -16,24 +18,24 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
     private val deviceDao = IpcApplication.database.deviceDao()
     private val exerciseDao = IpcApplication.database.exerciseDao()
 
-    private fun verifyPublicKeyValidity(publicKey: ByteArray): Boolean = true
     private fun verifyExerciseValidity(
         exe: Exercise,
         device: Device,
         signedMessage: ByteArray
-    ): Boolean = true
+    ): Boolean {
+        return try {
+            SecurityDecoder(device.publicKey).compareMessage(signedMessage, exe.rawMessage)
+        } catch (e: Throwable) {
+            Log.e("DEBUG", "ERROR $e")
+            throw e
+        }
+    }
 
     private fun generateTokenForDevice(device: Device): String = ""
 
     override suspend fun registerDevice(request: AuthenticationServiceOuterClass.RegisterDeviceRequest): AuthenticationServiceOuterClass.RegisterDeviceResponse {
-        val publicKey = request.publicKey.toByteArray().let {
-            if (verifyPublicKeyValidity(it)) {
-                it
-            } else {
-                null
-            }
-        } ?: throw ServiceException("Invalid public key")
-        val device = deviceDao.insertSafety(
+        val publicKey = request.publicKey.toByteArray()
+        val device = deviceDao.upsertSafety(
             Device(
                 publicKey = publicKey
             )
@@ -60,15 +62,19 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
     }
 
     override suspend fun resolveExercise(request: AuthenticationServiceOuterClass.ResolveExerciseRequest): AuthenticationServiceOuterClass.ResolveExerciseResponse {
+        Log.e("DEBUG", "resolveExercise")
         val device = deviceDao.find(request.device.toUUID())
+        Log.e("DEBUG", "device")
         val exercise = exerciseDao.find(
             device.publicId
         ) ?: throw ServiceException("Invalid exercise")
+        Log.e("DEBUG", "exercise")
         val exerciseStatus = verifyExerciseValidity(
             exe = exercise,
             device = device,
             signedMessage = request.signedMessage.toByteArray()
         )
+        Log.e("DEBUG", "exercise status")
 
         exerciseDao.update(
             exercise.copy(
@@ -76,9 +82,11 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
                 responseSuccess = exerciseStatus
             )
         )
+        Log.e("DEBUG", "exercise Update $exerciseStatus")
         if (!exerciseStatus) {
             throw ServiceException("Exercise response invalid")
         }
+        Log.e("DEBUG", "exercise response")
         return AuthenticationServiceOuterClass.ResolveExerciseResponse.newBuilder()
             .setToken(
                 generateTokenForDevice(device)
