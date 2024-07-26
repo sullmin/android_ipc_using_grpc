@@ -10,9 +10,9 @@ import java.security.Signature
 
 class SecuritySystem {
     companion object {
-        private const val ALIAS_KEYSTORE = "SecuritySystemIpcGrpc_2"
+        private const val ALIAS_KEYSTORE = "SecuritySystemIpcGrpc_7"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        private const val ALGORITHM = "SHA256withECDSA"
+        private const val ALGORITHM = "SHA256withRSA"
     }
 
     private lateinit var keys: KeyPair
@@ -54,10 +54,11 @@ class SecuritySystem {
             KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
         ).run {
             setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+            setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
             build()
         }
 
-        keys = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, ANDROID_KEYSTORE).let {
+        keys = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, ANDROID_KEYSTORE).let {
             it.initialize(parameterSpec)
             it.generateKeyPair()
         }

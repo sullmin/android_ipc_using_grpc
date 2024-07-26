@@ -12,7 +12,6 @@ import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
 import com.google.protobuf.ServiceException
 import java.time.LocalDateTime
-import kotlin.random.Random
 
 class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
     private val deviceDao = IpcApplication.database.deviceDao()
@@ -47,7 +46,11 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
 
     override suspend fun generateExercise(request: AuthenticationServiceOuterClass.GenerateExerciseRequest): AuthenticationServiceOuterClass.GenerateExerciseResponse {
         val device = deviceDao.find(request.device.toUUID())
-        val rawMessage = ByteArray(512).apply { Random.Default.nextBytes(this) }
+        //val rawMessage = ByteArray(512).apply { Random.Default.nextBytes(this) }
+        val rawMessage =
+            "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012".toByteArray(
+                Charsets.UTF_8
+            )
         val exercise = Exercise(
             deviceId = device.publicId,
             createdAt = LocalDateTime.now(),

@@ -2,12 +2,12 @@ package com.example.android_ipc_grpc.ipc
 
 import android.util.Log
 import java.security.KeyFactory
-import java.security.Signature
 import java.security.spec.X509EncodedKeySpec
+import javax.crypto.Cipher
 
 class SecurityDecoder(private val rawPublicKey: ByteArray) {
     companion object {
-        private const val ALGORITHM = "SHA256withECDSA"
+        private const val ALGORITHM = "RSA"
     }
 
 
@@ -20,14 +20,20 @@ class SecurityDecoder(private val rawPublicKey: ByteArray) {
     ): Boolean {
         return try {
             val keySpec = X509EncodedKeySpec(rawPublicKey)
-            val keyFactory = KeyFactory.getInstance("EC")
+            val keyFactory = KeyFactory.getInstance(ALGORITHM)
             val publicKey = keyFactory.generatePublic(keySpec)
 
-            Signature.getInstance(ALGORITHM).run {
-                initVerify(publicKey)
-                update(signedMessage)
-                verify(rawMessage)
-            }
+            val cipher = Cipher.getInstance(ALGORITHM)
+            cipher.init(Cipher.DECRYPT_MODE, publicKey)
+
+            val cipherMessage = cipher.doFinal(signedMessage)
+
+            Log.e("DEBUG", "raw ${rawMessage.size} - ${rawMessage.toString(Charsets.UTF_8)}")
+            Log.e(
+                "DEBUG",
+                "cipher ${cipherMessage.size} - ${cipherMessage.toString(Charsets.UTF_8)}"
+            )
+            rawMessage.contentEquals(cipherMessage)
         } catch (e: Throwable) {
             Log.e("DEBUG", "ERROR $e")
             throw e
