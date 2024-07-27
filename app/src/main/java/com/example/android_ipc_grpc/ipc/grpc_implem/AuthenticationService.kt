@@ -10,15 +10,24 @@ import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
 import com.google.protobuf.ServiceException
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import java.time.LocalDateTime
 import kotlin.random.Random
+
 
 class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
     private val deviceDao = IpcApplication.database.deviceDao()
     private val exerciseDao = IpcApplication.database.exerciseDao()
+    private val SECRET =
+        "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
 
     private fun generateTokenForDevice(device: Device): String {
-        return ""
+        // TODO FIX SECRET
+        return Jwts.builder()
+            .claim("device_public_id", device.publicId.toString())
+            .signWith(SignatureAlgorithm.HS256, SECRET.toByteArray())
+            .compact()
     }
 
     override suspend fun registerDevice(request: AuthenticationServiceOuterClass.RegisterDeviceRequest): AuthenticationServiceOuterClass.RegisterDeviceResponse {
