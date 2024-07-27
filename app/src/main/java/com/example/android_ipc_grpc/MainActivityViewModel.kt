@@ -22,7 +22,11 @@ import java.util.UUID
 
 class MainActivityViewModel : ViewModel() {
     private val channel: ManagedChannel by lazy {
-        ManagedChannelBuilder.forAddress("localhost", 8080).usePlaintext().build()
+        ManagedChannelBuilder.forAddress("localhost", 8080)
+            .intercept(
+                BearerInterceptor("eyJhbGciOiJIUzI1NiJ9.eyJkZXZpY2VfcHVibGljX2lkIjoiOWU2OWNmNmYtZGQ1NS00MGIyLTk3ODEtMTNiZTY2NzZmNDIwIn0.lEzS7lA69_gFWGY9Hs67YVPWYDSXzjs8buzJYAv7dq0")
+            ).usePlaintext()
+            .build()
     }
     private val massagingStub: IpcCoreGrpcKt.IpcCoreCoroutineStub by lazy {
         IpcCoreGrpcKt.IpcCoreCoroutineStub(channel)
@@ -33,10 +37,8 @@ class MainActivityViewModel : ViewModel() {
     val messageQueue: MutableStateFlow<List<UiMessage>> = MutableStateFlow(listOf())
     val message: MutableStateFlow<String> = MutableStateFlow("")
 
-    private fun getTemporaryIdentifier(pkg: String): UUID = when {
-        pkg.endsWith("1") -> UUID.fromString("6919b702-9cec-445f-8678-eea4e2da912f")
-        else -> UUID.fromString("50f15c64-49ed-4f66-b456-a81c4ffa926c")
-    }
+    private val me: MutableStateFlow<UUID> = MutableStateFlow(UUID.randomUUID())
+    private val token: MutableStateFlow<String> = MutableStateFlow("")
 
     suspend fun authenticate() {
         try {
@@ -59,27 +61,24 @@ class MainActivityViewModel : ViewModel() {
                     .setDevice(deviceId.toByteString())
                     .setRawMessage(encodedMsg)
                     .build()
-            val response = authenticationStub.resolveExercise(requestResponse)
-            Log.e("DEBUG", "token -> ${response.token}")
+            token.value = authenticationStub.resolveExercise(requestResponse).token
+            Log.e("DEBUG", "token -> ${token.value}")
         } catch (e: Throwable) {
             Log.e("DEBUG", "Throw exception $e")
             e.printStackTrace()
         }
     }
 
-    suspend fun sendMessage(pkg: String) {
+    suspend fun sendMessage() {
         val msg = message.value.ifBlank { null } ?: return
         val request = IpcCoreOuterClass.SendMessageRequest.newBuilder()
             .setMessage(msg)
-            .setTemporaryIdentifier(
-                getTemporaryIdentifier(pkg).toByteString()
-            )
             .build()
         message.value = ""
         massagingStub.sendMessage(request)
     }
 
-    fun subscribe(pkg: String) {
+    fun subscribe() {
         viewModelScope.launch {
             val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
             massagingStub.subscribe(request).collect {
@@ -90,7 +89,7 @@ class MainActivityViewModel : ViewModel() {
                         message = messageIt.message,
                         sendAt = currentLocalDateTime,
                         isOwner = when (messageIt.source.toUUID()) {
-                            getTemporaryIdentifier(pkg) -> UiMessage.OwnerType.ME
+                            me.value -> UiMessage.OwnerType.ME
                             else -> UiMessage.OwnerType.OTHER
                         },
                         isMessageGroup = computeGroupMassage(

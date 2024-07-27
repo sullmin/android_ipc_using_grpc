@@ -9,8 +9,6 @@ service IpcCore {
 
 message SendMessageRequest {
   string message = 1;
-  // TODO(1) replace by interceptor
-  bytes temporaryIdentifier = 2;
 }
 
 message SendMessageResponse {}

@@ -47,7 +47,10 @@ class MainActivity : AbstractServiceActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onServiceBound() {
-        viewModel.subscribe(application.packageName)
+        lifecycleScope.launch {
+            viewModel.authenticate()
+            viewModel.subscribe()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +84,7 @@ class MainActivity : AbstractServiceActivity() {
             onSendMessageListener = {
                 if (serviceBound().value) {
                     lifecycleScope.launch {
-                        viewModel.sendMessage(application.packageName)
+                        viewModel.sendMessage()
                     }
                 } else {
                     Toast.makeText(applicationContext, "Service not bound", Toast.LENGTH_LONG)

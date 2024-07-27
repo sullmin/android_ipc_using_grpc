@@ -9,7 +9,8 @@ import com.example.android_ipc_grpc.ipc.SecurityKeyManager
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
-import com.google.protobuf.ServiceException
+import io.grpc.Status
+import io.grpc.StatusException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import java.time.LocalDateTime
@@ -17,10 +18,13 @@ import kotlin.random.Random
 
 
 class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
+    companion object {
+        const val SECRET =
+            "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+    }
+
     private val deviceDao = IpcApplication.database.deviceDao()
     private val exerciseDao = IpcApplication.database.exerciseDao()
-    private val SECRET =
-        "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
 
     private fun generateTokenForDevice(device: Device): String {
         // TODO FIX SECRET
@@ -65,7 +69,7 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
         val device = deviceDao.find(request.device.toUUID())
         val exercise = exerciseDao.find(
             device.publicId
-        ) ?: throw ServiceException("Invalid exercise")
+        ) ?: throw StatusException(Status.INVALID_ARGUMENT.withDescription("Invalid exercise."))
         val exerciseStatus = exercise.rawMessage.contentEquals(request.rawMessage.toByteArray())
 
         exerciseDao.update(
@@ -75,7 +79,7 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
             )
         )
         if (!exerciseStatus) {
-            throw ServiceException("Exercise response invalid")
+            throw StatusException(Status.PERMISSION_DENIED.withDescription("Exercise response invalid."))
         }
         return AuthenticationServiceOuterClass.ResolveExerciseResponse.newBuilder()
             .setToken(

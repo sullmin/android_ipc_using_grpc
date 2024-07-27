@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import com.example.android_ipc_grpc.ipc.grpc_implem.AuthenticationInterceptor
 import com.example.android_ipc_grpc.ipc.grpc_implem.AuthenticationService
 import com.example.android_ipc_grpc.ipc.grpc_implem.IpcCoreService
 import io.grpc.Server
@@ -16,6 +17,9 @@ class IpcService : Service() {
         super.onCreate()
         ipcServer = try {
             NettyServerBuilder.forPort(8080)
+                .intercept(
+                    AuthenticationInterceptor()
+                )
                 .addService(
                     IpcCoreService()
                 )
