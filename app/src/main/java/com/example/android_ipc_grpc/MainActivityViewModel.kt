@@ -39,36 +39,26 @@ class MainActivityViewModel : ViewModel() {
     }
 
     suspend fun authenticate() {
-        Log.e("DEBUG", "authenticate")
         try {
             val securitySystem = SecuritySystem()
             val pbKey = securitySystem.encodedPublicKey.let { ByteString.copyFrom(it) }
-
-            Log.e("DEBUG", "SecuritySystem")
             val requestRegisterDevice =
                 AuthenticationServiceOuterClass.RegisterDeviceRequest.newBuilder()
                     .setPublicKey(pbKey)
                     .build()
-
             val deviceId = authenticationStub.registerDevice(requestRegisterDevice).device.toUUID()
-
-            Log.e("DEBUG", "register device")
             val requestExercise =
                 AuthenticationServiceOuterClass.GenerateExerciseRequest.newBuilder()
                     .setDevice(deviceId.toByteString())
                     .build()
             val exercise =
                 authenticationStub.generateExercise(requestExercise).signedMessage.toByteArray()
-
-            Log.e("DEBUG", "generate exercise")
             val encodedMsg = securitySystem.decrypt(exercise).let { ByteString.copyFrom(it) }
-            Log.e("DEBUG", "endodedmsg")
             val requestResponse =
                 AuthenticationServiceOuterClass.ResolveExerciseRequest.newBuilder()
                     .setDevice(deviceId.toByteString())
                     .setRawMessage(encodedMsg)
                     .build()
-            Log.e("DEBUG", "requestresponse")
             val response = authenticationStub.resolveExercise(requestResponse)
             Log.e("DEBUG", "token -> ${response.token}")
         } catch (e: Throwable) {
