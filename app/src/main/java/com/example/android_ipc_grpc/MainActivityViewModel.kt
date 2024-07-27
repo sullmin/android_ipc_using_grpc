@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
+import kotlin.random.Random
 
 class MainActivityViewModel : ViewModel() {
     private val channel: ManagedChannel by lazy {
@@ -37,7 +38,7 @@ class MainActivityViewModel : ViewModel() {
     }
 
     suspend fun authenticate() {
-        val message = "1234567890"
+        val message = ByteArray(SecuritySystem.BLOCK_SIZE).apply { Random.Default.nextBytes(this) }
         Log.e("DEBUG", "authenticate")
         val secu = SecuritySystem()
 

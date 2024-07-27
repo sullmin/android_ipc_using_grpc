@@ -10,17 +10,17 @@ import java.security.KeyStore
 import java.security.PublicKey
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
-import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 class SecuritySystem {
     companion object {
-        private const val ALIAS_KEYSTORE = "A1234567890B1"
+        private const val ALIAS_KEYSTORE = "A1234567890B12"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val ALGORITHM_KEY_STORE = "RSA"
         private const val ALGORITHM_CIPHER = "RSA/ECB/PKCS1Padding"
         private const val KEY_SIZE = 4096
+        const val BLOCK_SIZE = KEY_SIZE / 8 - 11
     }
 
     lateinit var keys: KeyPair
@@ -64,29 +64,18 @@ class SecuritySystem {
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun encrypt(message: String, publicKey: PublicKey): String {
+    fun encrypt(message: ByteArray, publicKey: PublicKey): ByteArray {
         val cipher = Cipher.getInstance(ALGORITHM_CIPHER)
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        val encryptedBytes = cipher.doFinal(message.toByteArray(Charsets.UTF_8))
-        return Base64.encode(encryptedBytes)
+        return cipher.doFinal(message)
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    fun decrypt(encryptedMessage: String): String {
-        val bytes = Base64.decode(encryptedMessage)
+    fun decrypt(encryptedMessage: ByteArray): ByteArray {
         val cipher = Cipher.getInstance(ALGORITHM_CIPHER)
-        Log.e("DEBUG", "isNULL ${keys.private == null}")
-        Log.e(
-            "DEBUG",
-            "private ${keys.private.algorithm} - ${keys.private.format} - ${keys.private.isDestroyed}"
-        )
-        Log.e(
-            "DEBUG",
-            "public ${keys.public.algorithm} - ${keys.public.format}"
-        )
+
         cipher.init(Cipher.DECRYPT_MODE, keys.private)
-        val decryptedBytes = cipher.doFinal(bytes)
-        return String(decryptedBytes, Charsets.UTF_8)
+        return cipher.doFinal(encryptedMessage)
     }
 
     fun regenKeyFromBytes(publicKeyBytes: ByteArray): PublicKey {
