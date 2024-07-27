@@ -6,29 +6,17 @@ import android.util.Log
 import com.example.android_ipc_grpc.IpcApplication
 import com.example.android_ipc_grpc.db.schemas.Device
 import com.example.android_ipc_grpc.db.schemas.Exercise
+import com.example.android_ipc_grpc.ipc.SecurityKeyManager
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
 import com.google.protobuf.ServiceException
 import java.time.LocalDateTime
+import kotlin.random.Random
 
 class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
     private val deviceDao = IpcApplication.database.deviceDao()
     private val exerciseDao = IpcApplication.database.exerciseDao()
-
-    private fun verifyExerciseValidity(
-        exe: Exercise,
-        device: Device,
-        signedMessage: ByteArray
-    ): Boolean {
-        return try {
-            TODO()
-            //SecurityDecoder(device.publicKey).compareMessage(signedMessage, exe.rawMessage)
-        } catch (e: Throwable) {
-            Log.e("DEBUG", "ERROR $e")
-            throw e
-        }
-    }
 
     private fun generateTokenForDevice(device: Device): String = ""
 
@@ -46,21 +34,20 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
 
     override suspend fun generateExercise(request: AuthenticationServiceOuterClass.GenerateExerciseRequest): AuthenticationServiceOuterClass.GenerateExerciseResponse {
         val device = deviceDao.find(request.device.toUUID())
-        //val rawMessage = ByteArray(512).apply { Random.Default.nextBytes(this) }
-        val rawMessage =
-            "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012".toByteArray(
-                Charsets.UTF_8
-            )
+        val rawMessage = ByteArray(SecurityKeyManager.BLOCK_SIZE).apply {
+            Random.Default.nextBytes(this)
+        }
         val exercise = Exercise(
             deviceId = device.publicId,
             createdAt = LocalDateTime.now(),
             rawMessage = rawMessage
         )
+        val signedMessage = SecurityKeyManager(device.publicKey).encrypt(rawMessage)
 
         exerciseDao.revokedForDevice(device.publicId)
         exerciseDao.insert(exercise)
         return AuthenticationServiceOuterClass.GenerateExerciseResponse.newBuilder()
-            .setRawMessage(ByteString.copyFrom(rawMessage))
+            .setSignedMessage(ByteString.copyFrom(signedMessage))
             .build()
     }
 
@@ -72,11 +59,7 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
             device.publicId
         ) ?: throw ServiceException("Invalid exercise")
         Log.e("DEBUG", "exercise")
-        val exerciseStatus = verifyExerciseValidity(
-            exe = exercise,
-            device = device,
-            signedMessage = request.signedMessage.toByteArray()
-        )
+        val exerciseStatus = exercise.rawMessage.contentEquals(request.rawMessage.toByteArray())
         Log.e("DEBUG", "exercise status")
 
         exerciseDao.update(

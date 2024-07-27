@@ -10,12 +10,11 @@ import javax.crypto.Cipher
 
 class SecuritySystem {
     companion object {
-        private const val ALIAS_KEYSTORE = "A1234567890B12"
+        private const val ALIAS_KEYSTORE = "AndroidIpcgRPC"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val ALGORITHM_KEY_STORE = "RSA"
         private const val ALGORITHM_CIPHER = "RSA/ECB/PKCS1Padding"
         private const val KEY_SIZE = 4096
-        const val BLOCK_SIZE = KEY_SIZE / 8 - 11
     }
 
     private lateinit var keys: KeyPair

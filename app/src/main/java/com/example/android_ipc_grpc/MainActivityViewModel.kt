@@ -1,16 +1,17 @@
 package com.example.android_ipc_grpc
 
 import AuthenticationServiceGrpcKt
+import AuthenticationServiceOuterClass
 import IpcCoreGrpcKt
 import IpcCoreOuterClass
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.android_ipc_grpc.ipc.SecurityKeyManager
 import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toLocalDateTime
 import com.example.android_ipc_grpc.utils.toUUID
+import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,6 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.random.Random
 
 class MainActivityViewModel : ViewModel() {
     private val channel: ManagedChannel by lazy {
@@ -39,22 +39,10 @@ class MainActivityViewModel : ViewModel() {
     }
 
     suspend fun authenticate() {
-        val message = ByteArray(SecuritySystem.BLOCK_SIZE).apply { Random.Default.nextBytes(this) }
         Log.e("DEBUG", "authenticate")
-        val secuClient = SecuritySystem()
-        val secuServer = SecurityKeyManager(secuClient.encodedPublicKey)
-
-        Log.e("DEBUG", "START")
-        val signed = secuServer.encrypt(message)!!
-        Log.e("DEBUG", "signed $signed")
-        val raw = secuClient.decrypt(signed)
-        Log.e("DEBUG", "raw $raw")
-        Log.e("DEBUG", "equals ${message.contentEquals(raw)}")
-
-        /*Log.e("DEBUG", "authenticate")
         try {
             val securitySystem = SecuritySystem()
-            val pbKey = securitySystem.publicKey?.let { ByteString.copyFrom(it) }
+            val pbKey = securitySystem.encodedPublicKey.let { ByteString.copyFrom(it) }
 
             Log.e("DEBUG", "SecuritySystem")
             val requestRegisterDevice =
@@ -70,15 +58,15 @@ class MainActivityViewModel : ViewModel() {
                     .setDevice(deviceId.toByteString())
                     .build()
             val exercise =
-                authenticationStub.generateExercise(requestExercise).rawMessage.toByteArray()
+                authenticationStub.generateExercise(requestExercise).signedMessage.toByteArray()
 
             Log.e("DEBUG", "generate exercise")
-            val encodedMsg = securitySystem.signMessage(exercise)?.let { ByteString.copyFrom(it) }
+            val encodedMsg = securitySystem.decrypt(exercise).let { ByteString.copyFrom(it) }
             Log.e("DEBUG", "endodedmsg")
             val requestResponse =
                 AuthenticationServiceOuterClass.ResolveExerciseRequest.newBuilder()
                     .setDevice(deviceId.toByteString())
-                    .setSignedMessage(encodedMsg)
+                    .setRawMessage(encodedMsg)
                     .build()
             Log.e("DEBUG", "requestresponse")
             val response = authenticationStub.resolveExercise(requestResponse)
@@ -86,7 +74,7 @@ class MainActivityViewModel : ViewModel() {
         } catch (e: Throwable) {
             Log.e("DEBUG", "Throw exception $e")
             e.printStackTrace()
-        }*/
+        }
     }
 
     suspend fun sendMessage(pkg: String) {
