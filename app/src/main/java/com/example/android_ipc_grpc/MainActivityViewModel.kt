@@ -1,7 +1,6 @@
 package com.example.android_ipc_grpc
 
 import AuthenticationServiceGrpcKt
-import AuthenticationServiceOuterClass
 import IpcCoreGrpcKt
 import IpcCoreOuterClass
 import android.util.Log
@@ -11,7 +10,6 @@ import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toLocalDateTime
 import com.example.android_ipc_grpc.utils.toUUID
-import com.google.protobuf.ByteString
 import io.grpc.ManagedChannel
 import io.grpc.ManagedChannelBuilder
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +37,20 @@ class MainActivityViewModel : ViewModel() {
     }
 
     suspend fun authenticate() {
+        val message = "1234567890"
         Log.e("DEBUG", "authenticate")
+        val secu = SecuritySystem()
+
+        Log.e("DEBUG", "START ${secu.keys.public.encoded.size}")
+        val usedKey = secu.regenKeyFromBytes(secu.keys.public.encoded)
+        Log.e("DEBUG", "KEY REGEN")
+        val signed = secu.encrypt(message, usedKey)
+        Log.e("DEBUG", "signed $signed")
+        val raw = secu.decrypt(signed)
+        Log.e("DEBUG", "raw $raw")
+        Log.e("DEBUG", "equals ${message.contentEquals(raw)}")
+
+        /*Log.e("DEBUG", "authenticate")
         try {
             val securitySystem = SecuritySystem()
             val pbKey = securitySystem.publicKey?.let { ByteString.copyFrom(it) }
@@ -74,7 +85,7 @@ class MainActivityViewModel : ViewModel() {
         } catch (e: Throwable) {
             Log.e("DEBUG", "Throw exception $e")
             e.printStackTrace()
-        }
+        }*/
     }
 
     suspend fun sendMessage(pkg: String) {

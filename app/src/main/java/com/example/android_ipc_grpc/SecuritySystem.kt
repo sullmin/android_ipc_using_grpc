@@ -2,25 +2,28 @@ package com.example.android_ipc_grpc
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Log
+import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.KeyStore
-import java.security.Signature
+import java.security.PublicKey
+import java.security.spec.X509EncodedKeySpec
+import javax.crypto.Cipher
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 class SecuritySystem {
     companion object {
-        private const val ALIAS_KEYSTORE = "SecuritySystemIpcGrpc_7"
+        private const val ALIAS_KEYSTORE = "A1234567890B1"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
-        private const val ALGORITHM = "SHA256withRSA"
+        private const val ALGORITHM_KEY_STORE = "RSA"
+        private const val ALGORITHM_CIPHER = "RSA/ECB/PKCS1Padding"
+        private const val KEY_SIZE = 4096
     }
 
-    private lateinit var keys: KeyPair
-
-    val publicKey: ByteArray?
-        get() {
-            return keys.public?.encoded
-        }
+    lateinit var keys: KeyPair
 
     init {
         val keyLoaded = initKeyPair()
@@ -31,44 +34,97 @@ class SecuritySystem {
     }
 
     private fun initKeyPair(): Boolean {
-        val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE).apply { load(null) }
+        val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
+        keyStore.load(null)
+        val privateKeyEntry = keyStore.getEntry(ALIAS_KEYSTORE, null) as? KeyStore.PrivateKeyEntry
+        val privateKey = privateKeyEntry?.privateKey
+        val publicKey = privateKeyEntry?.certificate?.publicKey
 
-        if (!keyStore.containsAlias(ALIAS_KEYSTORE)) {
-            return false
+        Log.e("DEBUG", "KeyStore ${privateKey != null} && ${publicKey != null}")
+        return if (privateKey != null && publicKey != null) {
+            keys = KeyPair(publicKey, privateKey)
+            true
+        } else {
+            false
         }
-
-        val entry = keyStore.getEntry(ALIAS_KEYSTORE, null)
-        val certificate = keyStore.getCertificate(ALIAS_KEYSTORE)
-
-        if (entry !is KeyStore.PrivateKeyEntry || certificate == null) {
-            return false
-        }
-
-        keys = KeyPair(certificate.publicKey, entry.privateKey)
-        return true
     }
 
     private fun generateKeyPair() {
         val parameterSpec = KeyGenParameterSpec.Builder(
             ALIAS_KEYSTORE,
-            KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
-        ).run {
-            setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-            setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
-            build()
-        }
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        ).apply {
+            setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+            setKeySize(KEY_SIZE)
+        }.build()
+        val keyPairGenerator = KeyPairGenerator.getInstance(ALGORITHM_KEY_STORE, ANDROID_KEYSTORE)
 
-        keys = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, ANDROID_KEYSTORE).let {
-            it.initialize(parameterSpec)
-            it.generateKeyPair()
-        }
+        keyPairGenerator.initialize(parameterSpec)
+        keys = keyPairGenerator.genKeyPair()
     }
 
-    fun signMessage(message: ByteArray): ByteArray? {
-        return Signature.getInstance(ALGORITHM).run {
-            initSign(keys.private)
-            update(message)
-            sign()
-        }
+    @OptIn(ExperimentalEncodingApi::class)
+    fun encrypt(message: String, publicKey: PublicKey): String {
+        val cipher = Cipher.getInstance(ALGORITHM_CIPHER)
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+        val encryptedBytes = cipher.doFinal(message.toByteArray(Charsets.UTF_8))
+        return Base64.encode(encryptedBytes)
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun decrypt(encryptedMessage: String): String {
+        val bytes = Base64.decode(encryptedMessage)
+        val cipher = Cipher.getInstance(ALGORITHM_CIPHER)
+        Log.e("DEBUG", "isNULL ${keys.private == null}")
+        Log.e(
+            "DEBUG",
+            "private ${keys.private.algorithm} - ${keys.private.format} - ${keys.private.isDestroyed}"
+        )
+        Log.e(
+            "DEBUG",
+            "public ${keys.public.algorithm} - ${keys.public.format}"
+        )
+        cipher.init(Cipher.DECRYPT_MODE, keys.private)
+        val decryptedBytes = cipher.doFinal(bytes)
+        return String(decryptedBytes, Charsets.UTF_8)
+    }
+
+    fun regenKeyFromBytes(publicKeyBytes: ByteArray): PublicKey {
+        val keySpec = X509EncodedKeySpec(publicKeyBytes)
+        val keyFactory = KeyFactory.getInstance(ALGORITHM_KEY_STORE)
+
+        return keyFactory.generatePublic(keySpec)
     }
 }
+
+/*class SecuritySystemTest {
+    fun generateKeyPair(): KeyPair {
+        val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
+        keyPairGenerator.initialize(2048)
+        return keyPairGenerator.genKeyPair()
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun encrypt(message: String, publicKey: PublicKey): String {
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+        val encryptedBytes = cipher.doFinal(message.toByteArray(Charsets.UTF_8))
+        return Base64.encode(encryptedBytes)
+    }
+
+    @OptIn(ExperimentalEncodingApi::class)
+    fun decrypt(encryptedMessage: String, privateKey: PrivateKey): String {
+        val bytes = Base64.decode(encryptedMessage)
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(Cipher.DECRYPT_MODE, privateKey)
+        val decryptedBytes = cipher.doFinal(bytes)
+        return String(decryptedBytes, Charsets.UTF_8)
+    }
+
+    fun regenKeyFromBytes(publicKeyBytes: ByteArray): PublicKey {
+        val keySpec = X509EncodedKeySpec(publicKeyBytes)
+        val keyFactory = KeyFactory.getInstance("RSA")
+
+        return keyFactory.generatePublic(keySpec)
+    }
+}*/
