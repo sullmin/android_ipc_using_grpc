@@ -2,15 +2,10 @@ package com.example.android_ipc_grpc
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Log
-import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
 import java.security.KeyStore
-import java.security.PublicKey
-import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 class SecuritySystem {
@@ -23,7 +18,7 @@ class SecuritySystem {
         const val BLOCK_SIZE = KEY_SIZE / 8 - 11
     }
 
-    lateinit var keys: KeyPair
+    private lateinit var keys: KeyPair
 
     init {
         val keyLoaded = initKeyPair()
@@ -40,7 +35,6 @@ class SecuritySystem {
         val privateKey = privateKeyEntry?.privateKey
         val publicKey = privateKeyEntry?.certificate?.publicKey
 
-        Log.e("DEBUG", "KeyStore ${privateKey != null} && ${publicKey != null}")
         return if (privateKey != null && publicKey != null) {
             keys = KeyPair(publicKey, privateKey)
             true
@@ -63,57 +57,22 @@ class SecuritySystem {
         keys = keyPairGenerator.genKeyPair()
     }
 
-    @OptIn(ExperimentalEncodingApi::class)
-    fun encrypt(message: ByteArray, publicKey: PublicKey): ByteArray {
-        val cipher = Cipher.getInstance(ALGORITHM_CIPHER)
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        return cipher.doFinal(message)
+    fun encrypt(message: ByteArray): ByteArray {
+        return Cipher.getInstance(ALGORITHM_CIPHER).run {
+            init(Cipher.ENCRYPT_MODE, keys.public)
+            doFinal(message)
+        }
     }
 
-    @OptIn(ExperimentalEncodingApi::class)
     fun decrypt(encryptedMessage: ByteArray): ByteArray {
-        val cipher = Cipher.getInstance(ALGORITHM_CIPHER)
-
-        cipher.init(Cipher.DECRYPT_MODE, keys.private)
-        return cipher.doFinal(encryptedMessage)
+        return Cipher.getInstance(ALGORITHM_CIPHER).run {
+            init(Cipher.DECRYPT_MODE, keys.private)
+            doFinal(encryptedMessage)
+        }
     }
 
-    fun regenKeyFromBytes(publicKeyBytes: ByteArray): PublicKey {
-        val keySpec = X509EncodedKeySpec(publicKeyBytes)
-        val keyFactory = KeyFactory.getInstance(ALGORITHM_KEY_STORE)
-
-        return keyFactory.generatePublic(keySpec)
-    }
+    val encodedPublicKey: ByteArray
+        get() {
+            return keys.public.encoded
+        }
 }
-
-/*class SecuritySystemTest {
-    fun generateKeyPair(): KeyPair {
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
-        keyPairGenerator.initialize(2048)
-        return keyPairGenerator.genKeyPair()
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    fun encrypt(message: String, publicKey: PublicKey): String {
-        val cipher = Cipher.getInstance("RSA")
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
-        val encryptedBytes = cipher.doFinal(message.toByteArray(Charsets.UTF_8))
-        return Base64.encode(encryptedBytes)
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    fun decrypt(encryptedMessage: String, privateKey: PrivateKey): String {
-        val bytes = Base64.decode(encryptedMessage)
-        val cipher = Cipher.getInstance("RSA")
-        cipher.init(Cipher.DECRYPT_MODE, privateKey)
-        val decryptedBytes = cipher.doFinal(bytes)
-        return String(decryptedBytes, Charsets.UTF_8)
-    }
-
-    fun regenKeyFromBytes(publicKeyBytes: ByteArray): PublicKey {
-        val keySpec = X509EncodedKeySpec(publicKeyBytes)
-        val keyFactory = KeyFactory.getInstance("RSA")
-
-        return keyFactory.generatePublic(keySpec)
-    }
-}*/

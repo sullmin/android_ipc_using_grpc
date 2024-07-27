@@ -6,6 +6,7 @@ import IpcCoreOuterClass
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.android_ipc_grpc.ipc.SecurityKeyManager
 import com.example.android_ipc_grpc.ui.models.UiMessage
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toLocalDateTime
@@ -40,14 +41,13 @@ class MainActivityViewModel : ViewModel() {
     suspend fun authenticate() {
         val message = ByteArray(SecuritySystem.BLOCK_SIZE).apply { Random.Default.nextBytes(this) }
         Log.e("DEBUG", "authenticate")
-        val secu = SecuritySystem()
+        val secuClient = SecuritySystem()
+        val secuServer = SecurityKeyManager(secuClient.encodedPublicKey)
 
-        Log.e("DEBUG", "START ${secu.keys.public.encoded.size}")
-        val usedKey = secu.regenKeyFromBytes(secu.keys.public.encoded)
-        Log.e("DEBUG", "KEY REGEN")
-        val signed = secu.encrypt(message, usedKey)
+        Log.e("DEBUG", "START")
+        val signed = secuServer.encrypt(message)!!
         Log.e("DEBUG", "signed $signed")
-        val raw = secu.decrypt(signed)
+        val raw = secuClient.decrypt(signed)
         Log.e("DEBUG", "raw $raw")
         Log.e("DEBUG", "equals ${message.contentEquals(raw)}")
 

@@ -6,7 +6,6 @@ import android.util.Log
 import com.example.android_ipc_grpc.IpcApplication
 import com.example.android_ipc_grpc.db.schemas.Device
 import com.example.android_ipc_grpc.db.schemas.Exercise
-import com.example.android_ipc_grpc.ipc.SecurityDecoder
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
@@ -23,7 +22,8 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
         signedMessage: ByteArray
     ): Boolean {
         return try {
-            SecurityDecoder(device.publicKey).compareMessage(signedMessage, exe.rawMessage)
+            TODO()
+            //SecurityDecoder(device.publicKey).compareMessage(signedMessage, exe.rawMessage)
         } catch (e: Throwable) {
             Log.e("DEBUG", "ERROR $e")
             throw e
