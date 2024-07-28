@@ -58,12 +58,12 @@ normally.
     * Application use key pair to resolve exercise that is used as credential.
 - `ipc_core` is protected by token and are used to share data with other process.
     * [HERE] It's you IPC channel
-    * In this case, we use **Room** to persiste messages send by each Application
+    * In this case, we use **Room** to persiste messages send by each Applications.
 - Now applications only needs to communicate by using
     ```kotlin
         GlobalServiceStub(token)
     ```
-  who directly connect to server
+  who directly connect to server.
 - Now, IPC is available
 
 ## AVD Example (API 34 - Android 14)
