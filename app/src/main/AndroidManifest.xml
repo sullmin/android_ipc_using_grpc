@@ -34,10 +34,10 @@
             android:name=".ipc.IpcService"
             android:enabled="true"
             android:exported="true"
-            android:permission="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION">
-            <intent-filter>
-                <action android:name="com.example.android_ipc_grpc.START_SERVICE" />
-            </intent-filter>
-        </service>
+            android:permission="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION" />
+
+        <meta-data
+            android:name="com.example.android_ipc_grpc.SERVICE_PACKAGE"
+            android:value="${servicePackage}" />
     </application>
 </manifest>

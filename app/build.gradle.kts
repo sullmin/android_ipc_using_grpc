@@ -69,11 +69,13 @@ android {
             dimension = "version"
             applicationIdSuffix = ".process_1"
             versionNameSuffix = "-1"
+            manifestPlaceholders["servicePackage"] = "com.example.android_ipc_grpc.process_2"
         }
         create("process_2") {
             dimension = "version"
             applicationIdSuffix = ".process_2"
             versionNameSuffix = "-2"
+            manifestPlaceholders["servicePackage"] = "com.example.android_ipc_grpc.process_2"
         }
     }
 }
