@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
 import androidx.compose.material3.AlertDialogDefaults.shape
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -107,12 +108,16 @@ class MainActivity : AbstractServiceActivity() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
         ) {
-            Icon(
-                modifier = Modifier.size(30.dp),
-                imageVector = Icons.Rounded.KeyboardArrowLeft,
-                tint = MaterialTheme.colorScheme.primary,
-                contentDescription = "Button back"
-            )
+            IconButton(
+                onClick = { boundService() }
+            ) {
+                Icon(
+                    modifier = Modifier.size(30.dp),
+                    imageVector = Icons.Rounded.KeyboardArrowLeft,
+                    tint = MaterialTheme.colorScheme.primary,
+                    contentDescription = "Button back"
+                )
+            }
             IdentityWidget(
                 identity = application.packageName.substringAfterLast(".")
             )

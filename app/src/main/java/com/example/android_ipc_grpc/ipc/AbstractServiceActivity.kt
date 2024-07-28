@@ -33,8 +33,7 @@ abstract class AbstractServiceActivity : ComponentActivity() {
 
     fun serviceBound(): MutableStateFlow<Boolean> = mBound
 
-    override fun onStart() {
-        super.onStart()
+    protected fun boundService() {
         val appMetadata = applicationContext.packageManager.getApplicationInfo(
             applicationContext.packageName,
             PackageManager.GET_META_DATA
@@ -48,6 +47,11 @@ abstract class AbstractServiceActivity : ComponentActivity() {
         ).also { intent ->
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        boundService()
     }
 
     override fun onStop() {

@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <queries>
+        <package android:name="${servicePackage}" />
+    </queries>
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <permission android:name="com.example.android_ipc_grpc.permission.MY_SERVICE_PERMISSION" />
