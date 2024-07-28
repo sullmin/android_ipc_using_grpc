@@ -38,6 +38,34 @@ To improve experience, ***run*** both applications on `split screen`.
 Example of both application running on split screen, it's also work when application running
 normally.
 
+## How is it working ?
+
+- Apps get the Master package name from `AndroidManifest.xml`.
+    ```xml
+        <meta-data
+            android:name="com.example.android_ipc_grpc.SERVICE_PACKAGE"
+            android:value="${servicePackage}" />
+    ```
+    * This value is configurable in `build.gradle.kts`
+      ```kotlin
+          manifestPlaceholders["servicePackage"] = "com.example.android_ipc_grpc.process_2"  
+      ```
+
+- Apps will automatically try to bound the Master service, that is a *Standard Android Service*.
+- This service will run locally an kotlin **gRPC** server.
+    * The `*.proto` files are available on `app/src/main/proto`
+- `AuthenticationService` is opened and are used by app to register themself to service.
+    * Application use key pair to resolve exercise that is used as credential.
+- `ipc_core` is protected by token and are used to share data with other process.
+    * [HERE] It's you IPC channel
+    * In this case, we use **Room** to persiste messages send by each Application
+- Now applications only needs to communicate by using
+    ```kotlin
+        GlobalServiceStub(token)
+    ```
+  who directly connect to server
+- Now, IPC is available
+
 ## AVD Example (API 34 - Android 14)
 
 ![Split Screen AVD](images/split_screen.png)
