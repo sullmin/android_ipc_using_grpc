@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+service AuthenticationService {
+  rpc registerDevice (RegisterDeviceRequest) returns (RegisterDeviceResponse) {}
+
+  rpc generateExercise (GenerateExerciseRequest) returns (GenerateExerciseResponse) {}
+  rpc resolveExercise (ResolveExerciseRequest) returns (ResolveExerciseResponse) {}
+}
+
+message RegisterDeviceRequest {
+  bytes public_key = 1;
+}
+
+message RegisterDeviceResponse {
+  bytes device = 1;
+}
+
+message GenerateExerciseRequest {
+  bytes device = 1;
+}
+
+message GenerateExerciseResponse {
+  bytes signed_message = 1;
+}
+
+message ResolveExerciseRequest {
+  bytes device = 1;
+  bytes raw_message = 2;
+}
+
+message ResolveExerciseResponse {
+  string token = 1;
+}

@@ -35,7 +35,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -104,6 +107,9 @@ protobuf {
 }
 
 dependencies {
+    // JWT
+    implementation("io.jsonwebtoken:jjwt:0.12.6")
+
     // GRPC - PROTOBUF
     val grpc_version = "1.47.0"
 

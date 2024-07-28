@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Person
@@ -26,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,7 +49,10 @@ class MainActivity : AbstractServiceActivity() {
     private val viewModel: MainActivityViewModel by viewModels()
 
     override fun onServiceBound() {
-        viewModel.subscribe(application.packageName)
+        lifecycleScope.launch {
+            viewModel.authenticate()
+            viewModel.subscribe()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,7 +86,7 @@ class MainActivity : AbstractServiceActivity() {
             onSendMessageListener = {
                 if (serviceBound().value) {
                     lifecycleScope.launch {
-                        viewModel.sendMessage(application.packageName)
+                        viewModel.sendMessage()
                     }
                 } else {
                     Toast.makeText(applicationContext, "Service not bound", Toast.LENGTH_LONG)
@@ -149,10 +154,17 @@ class MainActivity : AbstractServiceActivity() {
 
     @Composable
     private fun MessagesWidget() {
+        val scrollState = rememberLazyListState()
         val messages by viewModel.messageQueue.collectAsState(initial = listOf())
 
+        LaunchedEffect(messages.size) {
+            if (messages.isNotEmpty()) {
+                scrollState.animateScrollToItem(messages.lastIndex)
+            }
+        }
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            state = scrollState
         ) {
             items(messages) { uiMessage ->
                 MessageBox(
