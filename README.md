@@ -23,18 +23,29 @@ Start application `process_1` and `process_2`.
 Top right Email icon on each applications must have green pill, **if** pills blink red it's because
 *service* are not running.
 
-Connexion with service *valide*
+Connexion with service *valid*
 ![Green Pill](images/green_pill.png)
 
-Connexion with service ***invalide***
+Connexion with service ***invalid***
 ![Red Blink Pill](images/red_pill.png)
+
+Retry Connexion with service
+![RETRY ICON](images/retry.png)
 
 To improve experience, ***run*** both applications on `split screen`.
 ***Now***, send message on both applications.
 
 Example of both application running on split screen, it's also work when application running
 normally.
-![Split Screen](images/split_screen.png)
+
+## AVD Example (API 34 - Android 14)
+
+![Split Screen AVD](images/split_screen.png)
+
+## Physical Device Example (API 33 - Android 13)
+
+![Split Screen API 34](images/split_screen_real_device.png)
+![Split Screen API 34](images/split_screen_real_device_2.png)
 
 ## Configuration of AVD used for test
 
