@@ -2,9 +2,11 @@ package com.example.android_ipc_grpc.ipc.grpc_implem
 
 import AuthenticationServiceGrpcKt
 import AuthenticationServiceOuterClass
+import android.util.Log
 import com.example.android_ipc_grpc.IpcApplication
 import com.example.android_ipc_grpc.db.schemas.Device
 import com.example.android_ipc_grpc.db.schemas.Exercise
+import com.example.android_ipc_grpc.ipc.JwtSecurity
 import com.example.android_ipc_grpc.ipc.SecurityKeyManager
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
@@ -12,26 +14,27 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import java.time.LocalDateTime
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.random.Random
 
 
 class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
-    companion object {
-        const val SECRET =
-            "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-    }
-
     private val deviceDao = IpcApplication.database.deviceDao()
     private val exerciseDao = IpcApplication.database.exerciseDao()
 
+    @OptIn(ExperimentalEncodingApi::class)
     private fun generateTokenForDevice(device: Device): String {
-        // TODO FIX SECRET
-        return Jwts.builder()
-            .claim("device_public_id", device.publicId.toString())
-            .signWith(SignatureAlgorithm.HS256, SECRET.toByteArray())
-            .compact()
+        return try {
+            val key = JwtSecurity().secretKey
+            Jwts.builder()
+                .claim("device_public_id", device.publicId.toString())
+                .signWith(key, Jwts.SIG.HS256)
+                .compact()
+        } catch (e: Throwable) {
+            Log.e("DEBUG", "generateTokenForDevice $e")
+            throw e
+        }
     }
 
     override suspend fun registerDevice(request: AuthenticationServiceOuterClass.RegisterDeviceRequest): AuthenticationServiceOuterClass.RegisterDeviceResponse {
