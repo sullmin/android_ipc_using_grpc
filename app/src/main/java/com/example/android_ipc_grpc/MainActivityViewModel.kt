@@ -52,44 +52,50 @@ class MainActivityViewModel : ViewModel() {
 
             globalApi.shutdown()
             globalApi = GlobalServiceStub(token)
-            Log.e("DEBUG", "token -> $token")
         } catch (e: Throwable) {
-            Log.e("DEBUG", "Throw exception $e")
-            e.printStackTrace()
+            Log.e("DEBUG", "MainActivityViewModel.authenticate() throw $e")
         }
     }
 
     suspend fun sendMessage() {
-        val msg = message.value.ifBlank { null } ?: return
-        val request = IpcCoreOuterClass.SendMessageRequest.newBuilder()
-            .setMessage(msg)
-            .build()
-        message.value = ""
-        globalApi.massagingStub.sendMessage(request)
+        try {
+            val msg = message.value.ifBlank { null } ?: return
+            val request = IpcCoreOuterClass.SendMessageRequest.newBuilder()
+                .setMessage(msg)
+                .build()
+            message.value = ""
+            globalApi.massagingStub.sendMessage(request)
+        } catch (e: Throwable) {
+            Log.e("DEBUG", "MainActivityViewModel.sendMessage() throw $e")
+        }
     }
 
     fun subscribe() {
         viewModelScope.launch {
-            val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
-            globalApi.massagingStub.subscribe(request).collect {
-                var previousCreatedAt: LocalDateTime? = null
-                messageQueue.value = it.messagesList.map { messageIt ->
-                    val currentLocalDateTime = messageIt.createdAt.toLocalDateTime()
-                    val uiMessage = UiMessage(
-                        message = messageIt.message,
-                        sendAt = currentLocalDateTime,
-                        isOwner = when (messageIt.source.toUUID()) {
-                            me.value -> UiMessage.OwnerType.ME
-                            else -> UiMessage.OwnerType.OTHER
-                        },
-                        isMessageGroup = computeGroupMassage(
-                            previousCreatedAt,
-                            currentLocalDateTime
+            try {
+                val request = IpcCoreOuterClass.SubscribeRequest.newBuilder().build()
+                globalApi.massagingStub.subscribe(request).collect {
+                    var previousCreatedAt: LocalDateTime? = null
+                    messageQueue.value = it.messagesList.map { messageIt ->
+                        val currentLocalDateTime = messageIt.createdAt.toLocalDateTime()
+                        val uiMessage = UiMessage(
+                            message = messageIt.message,
+                            sendAt = currentLocalDateTime,
+                            isOwner = when (messageIt.source.toUUID()) {
+                                me.value -> UiMessage.OwnerType.ME
+                                else -> UiMessage.OwnerType.OTHER
+                            },
+                            isMessageGroup = computeGroupMassage(
+                                previousCreatedAt,
+                                currentLocalDateTime
+                            )
                         )
-                    )
-                    previousCreatedAt = currentLocalDateTime
-                    uiMessage
+                        previousCreatedAt = currentLocalDateTime
+                        uiMessage
+                    }
                 }
+            } catch (e: Throwable) {
+                Log.e("DEBUG", "MainActivityViewModel.sendMessage() throw $e")
             }
         }
     }
