@@ -1,4 +1,4 @@
-package com.example.android_ipc_grpc.ipc
+package com.example.android_ipc_grpc.ipc.security
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -8,7 +8,17 @@ import javax.crypto.SecretKey
 
 
 class JwtSecurity {
-    lateinit var secretKey: SecretKey
+    companion object {
+        private const val ALIAS_KEYSTORE = "JwtSecurity"
+        private const val ANDROID_KEYSTORE = "AndroidKeyStore"
+        private const val KEY_SIZE = 256
+    }
+
+    private lateinit var secretKey: SecretKey
+    val secret: SecretKey
+        get() {
+            return secretKey
+        }
 
     init {
         val init = initKey()
@@ -20,22 +30,22 @@ class JwtSecurity {
 
     private fun generateKey() {
         val keyGenerator =
-            KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_HMAC_SHA256, "AndroidKeyStore")
+            KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_HMAC_SHA256, ANDROID_KEYSTORE)
         keyGenerator.init(
             KeyGenParameterSpec.Builder(
-                "HMACKey",
+                ALIAS_KEYSTORE,
                 KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
             )
-                .setKeySize(256)
+                .setKeySize(KEY_SIZE)
                 .build()
         )
         secretKey = keyGenerator.generateKey()
     }
 
-    fun initKey(): Boolean = try {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore")
+    private fun initKey(): Boolean = try {
+        val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
         keyStore.load(null)
-        secretKey = keyStore.getKey("HMACKey", null) as SecretKey
+        secretKey = keyStore.getKey(ALIAS_KEYSTORE, null) as SecretKey
         true
     } catch (e: Throwable) {
         false

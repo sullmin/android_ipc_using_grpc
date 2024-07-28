@@ -1,7 +1,7 @@
 package com.example.android_ipc_grpc.ipc.grpc_implem
 
 import android.util.Log
-import com.example.android_ipc_grpc.ipc.JwtSecurity
+import com.example.android_ipc_grpc.ipc.security.JwtSecurity
 import io.grpc.Context
 import io.grpc.Contexts
 import io.grpc.Metadata
@@ -36,7 +36,7 @@ class AuthenticationInterceptor : ServerInterceptor {
         if (OPENED_API_CALL.contains(call?.methodDescriptor?.bareMethodName)) {
             return next?.startCall(call, headers) ?: object : ServerCall.Listener<ReqT>() {}
         }
-        val key = JwtSecurity().secretKey
+        val key = JwtSecurity().secret
         return try {
             val rawJwt = headers?.get(authKey)?.substringAfter("Bearer ")
             val jwt = Jwts.parser().verifyWith(key).build().parseSignedClaims(rawJwt)

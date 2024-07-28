@@ -6,8 +6,8 @@ import android.util.Log
 import com.example.android_ipc_grpc.IpcApplication
 import com.example.android_ipc_grpc.db.schemas.Device
 import com.example.android_ipc_grpc.db.schemas.Exercise
-import com.example.android_ipc_grpc.ipc.JwtSecurity
-import com.example.android_ipc_grpc.ipc.SecurityKeyManager
+import com.example.android_ipc_grpc.ipc.security.JwtSecurity
+import com.example.android_ipc_grpc.ipc.security.PublicKeySecurity
 import com.example.android_ipc_grpc.utils.toByteString
 import com.example.android_ipc_grpc.utils.toUUID
 import com.google.protobuf.ByteString
@@ -26,7 +26,7 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
     @OptIn(ExperimentalEncodingApi::class)
     private fun generateTokenForDevice(device: Device): String {
         return try {
-            val key = JwtSecurity().secretKey
+            val key = JwtSecurity().secret
             Jwts.builder()
                 .claim("device_public_id", device.publicId.toString())
                 .signWith(key, Jwts.SIG.HS256)
@@ -51,7 +51,7 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
 
     override suspend fun generateExercise(request: AuthenticationServiceOuterClass.GenerateExerciseRequest): AuthenticationServiceOuterClass.GenerateExerciseResponse {
         val device = deviceDao.find(request.device.toUUID())
-        val rawMessage = ByteArray(SecurityKeyManager.BLOCK_SIZE).apply {
+        val rawMessage = ByteArray(PublicKeySecurity.BLOCK_SIZE).apply {
             Random.Default.nextBytes(this)
         }
         val exercise = Exercise(
@@ -59,7 +59,7 @@ class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceC
             createdAt = LocalDateTime.now(),
             rawMessage = rawMessage
         )
-        val signedMessage = SecurityKeyManager(device.publicKey).encrypt(rawMessage)
+        val signedMessage = PublicKeySecurity(device.publicKey).encrypt(rawMessage)
 
         exerciseDao.revokedForDevice(device.publicId)
         exerciseDao.insert(exercise)

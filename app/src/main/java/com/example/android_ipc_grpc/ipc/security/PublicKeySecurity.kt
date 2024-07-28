@@ -1,4 +1,4 @@
-package com.example.android_ipc_grpc.ipc
+package com.example.android_ipc_grpc.ipc.security
 
 import android.util.Log
 import java.security.KeyFactory
@@ -6,7 +6,7 @@ import java.security.PublicKey
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
 
-class SecurityKeyManager(
+class PublicKeySecurity(
     publicKeyEncoded: ByteArray
 ) {
     companion object {

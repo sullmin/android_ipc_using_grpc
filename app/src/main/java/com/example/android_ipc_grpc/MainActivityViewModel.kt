@@ -19,7 +19,9 @@ import java.util.UUID
 
 class MainActivityViewModel : ViewModel() {
     private var globalApi: GlobalServiceStub = GlobalServiceStub()
-    private val me: MutableStateFlow<UUID> = MutableStateFlow(UUID.randomUUID())
+    private val me: MutableStateFlow<UUID> = MutableStateFlow(
+        UUID.fromString("00000000-0000-0000-0000-000000000000")
+    )
 
     val messageQueue: MutableStateFlow<List<UiMessage>> = MutableStateFlow(listOf())
     val message: MutableStateFlow<String> = MutableStateFlow("")
