@@ -1,4 +1,4 @@
-package com.example.android_ipc_grpc
+package com.example.android_ipc_grpc.client
 
 import io.grpc.CallOptions
 import io.grpc.Channel
