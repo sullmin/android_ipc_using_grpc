@@ -3,7 +3,8 @@ package com.example.android_ipc_grpc.ipc.grpc_implem
 import AuthenticationServiceGrpcKt
 import AuthenticationServiceOuterClass
 import android.util.Log
-import com.example.android_ipc_grpc.IpcApplication
+import com.example.android_ipc_grpc.db.dao.DeviceDao
+import com.example.android_ipc_grpc.db.dao.ExerciseDao
 import com.example.android_ipc_grpc.db.schemas.Device
 import com.example.android_ipc_grpc.db.schemas.Exercise
 import com.example.android_ipc_grpc.ipc.security.JwtSecurity
@@ -19,10 +20,10 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.random.Random
 
 
-class AuthenticationService : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
-    private val deviceDao = IpcApplication.database.deviceDao()
-    private val exerciseDao = IpcApplication.database.exerciseDao()
-
+class AuthenticationService(
+    private val deviceDao: DeviceDao,
+    private val exerciseDao: ExerciseDao
+) : AuthenticationServiceGrpcKt.AuthenticationServiceCoroutineImplBase() {
     @OptIn(ExperimentalEncodingApi::class)
     private fun generateTokenForDevice(device: Device): String {
         return try {

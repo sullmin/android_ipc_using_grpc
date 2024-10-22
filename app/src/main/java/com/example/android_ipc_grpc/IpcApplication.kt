@@ -4,9 +4,10 @@ import android.app.Application
 import androidx.room.Room
 import com.example.android_ipc_grpc.db.AppDatabase
 import com.example.android_ipc_grpc.db.converter.LocalDateTimeConverter
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class IpcApplication : Application() {
-
     companion object {
         lateinit var database: AppDatabase
     }
